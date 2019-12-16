@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/nav_graph"
+        app:startDestination="@id/checkListFragment">
+
+    <fragment
+            android:id="@+id/checkListFragment"
+            android:name="ru.spbstu.gusev.checkpoint.ui.checklist.CheckListFragment"
+            android:label="fragment_check_list"
+            tools:layout="@layout/check_list_fragment" />
+    <fragment
+            android:id="@+id/checkDetailsFragment"
+            android:name="ru.spbstu.gusev.checkpoint.ui.checklist.CheckDetailsFragment"
+            android:label="check_details_fragment"
+            tools:layout="@layout/check_details_fragment" />
+    <fragment
+            android:id="@+id/editCheckFragment"
+            android:name="ru.spbstu.gusev.checkpoint.ui.checklist.EditCheckFragment"
+            android:label="new_check_fragment"
+            tools:layout="@layout/new_check_fragment" />
+</navigation>
