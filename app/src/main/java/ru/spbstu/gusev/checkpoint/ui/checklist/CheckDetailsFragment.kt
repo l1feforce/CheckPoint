@@ -19,8 +19,8 @@ import ru.spbstu.gusev.checkpoint.extensions.toRubles
 import ru.spbstu.gusev.checkpoint.extensions.toUri
 import ru.spbstu.gusev.checkpoint.model.CheckItem
 import ru.spbstu.gusev.checkpoint.model.ProductType
+import ru.spbstu.gusev.checkpoint.ui.adapter.ProductAdapter
 import ru.spbstu.gusev.checkpoint.ui.base.BaseFragment
-import ru.spbstu.gusev.checkpoint.ui.checklist.adapter.ProductAdapter
 import ru.spbstu.gusev.checkpoint.viewmodel.CheckListViewModel
 
 class CheckDetailsFragment : BaseFragment() {
@@ -94,10 +94,7 @@ class CheckDetailsFragment : BaseFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.edit_action -> {
-                val bundle = bundleOf(
-                    "is_old_check" to "true",
-                    "image" to viewModel.currentCheckItem.checkImagePath
-                )
+                val bundle = bundleOf("is_edit_mode" to "true")
                 findNavController().navigate(R.id.editCheckFragment, bundle)
                 true
             }

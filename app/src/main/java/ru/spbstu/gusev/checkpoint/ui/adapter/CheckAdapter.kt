@@ -1,4 +1,4 @@
-package ru.spbstu.gusev.checkpoint.ui.checklist.adapter
+package ru.spbstu.gusev.checkpoint.ui.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

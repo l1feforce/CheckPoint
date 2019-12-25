@@ -11,9 +11,9 @@ data class CheckItem(
     var shop: String = "",
     var products: List<ProductItem> = listOf(),
     var checkImagePath: String = "",
-    var checkText: String = "",
-    @PrimaryKey(autoGenerate = true)
-    var id: Int = 0
+    @PrimaryKey
+    var id: String = "",
+    var imageBase64: String = ""
 ) {
     companion object {
         fun createDefault() = CheckItem(
@@ -35,6 +35,14 @@ data class CheckItem(
         shop = checkItem.shop
         products = checkItem.products
         checkImagePath = checkItem.checkImagePath
-        checkText = checkItem.checkText
+        imageBase64 = checkItem.imageBase64
     }
+
+    fun toMap() = hashMapOf(
+        "categoryName" to this.categoryName,
+        "finalPrice" to this.finalPrice,
+        "date" to this.date,
+        "shop" to this.shop,
+        "checkImagePath" to this.checkImagePath
+    )
 }

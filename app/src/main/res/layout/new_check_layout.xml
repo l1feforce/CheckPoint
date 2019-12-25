@@ -35,6 +35,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:hint="@string/category_hint"
+                        android:maxLines="1"
                         android:minWidth="110dp"
                         android:text="Category name example"
                         android:textSize="18sp" />
@@ -130,7 +131,8 @@
                     app:layout_constraintEnd_toEndOf="@+id/products_recycler"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="@+id/products_recycler"
-                    app:layout_constraintTop_toBottomOf="@id/add_button">
+                    app:layout_constraintTop_toBottomOf="@id/add_button"
+                    app:suffixText="@string/currency">
 
                 <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/final_price_text"
@@ -138,8 +140,8 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-medium"
                         android:hint="@string/final_price_hint"
-                        android:inputType="number"
-                        android:minWidth="100dp"
+                        android:inputType="numberDecimal"
+                        android:minWidth="120dp"
                         android:text="@string/new_check_final_price_example"
                         android:textSize="20sp" />
             </com.google.android.material.textfield.TextInputLayout>

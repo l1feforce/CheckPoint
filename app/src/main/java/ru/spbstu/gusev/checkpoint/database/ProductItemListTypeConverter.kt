@@ -1,4 +1,4 @@
-package ru.spbstu.gusev.checkpoint.model.database
+package ru.spbstu.gusev.checkpoint.database
 
 import androidx.room.TypeConverter
 import ru.spbstu.gusev.checkpoint.model.ProductItem

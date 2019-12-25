@@ -15,4 +15,6 @@
     <string name="category_hint">Category</string>
     <string name="field_is_empty_error">Field is empty</string>
     <string name="edit_title">Edit</string>
+    <string name="currency">руб</string>
+    <string name="auth_title">Auth</string>
 </resources>

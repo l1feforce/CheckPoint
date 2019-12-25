@@ -1,6 +1,6 @@
 package ru.spbstu.gusev.checkpoint.model
 
 data class ProductItem(
-    val productName: String,
-    val productPrice: Float
+    var productName: String = "",
+    var productPrice: Float = 0f
 )

@@ -53,7 +53,7 @@ dependencies {
     implementation "androidx.room:room-runtime:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
     kapt "androidx.room:room-compiler:$roomVersion"
-    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+    //androidTestImplementation "androidx.room:room-testing:$roomVersion"
 
     // Lifecycle components
     implementation "androidx.lifecycle:lifecycle-extensions:$archLifecycleVersion"
@@ -64,7 +64,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$archLifecycleVersion"
 
     // Coroutines
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:+'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:+'
 
     //Navigation
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
@@ -93,4 +94,13 @@ dependencies {
 
     //material components
     implementation "com.google.android.material:material:+"
+
+    //Firebase auth
+    implementation 'com.google.firebase:firebase-auth:19.2.0'
+    implementation 'com.firebaseui:firebase-ui-auth:4.3.1'
+
+    //Firebase store
+    implementation 'com.google.firebase:firebase-firestore:21.3.1'
+    implementation 'com.google.firebase:firebase-firestore-ktx:21.3.1'
+
 }

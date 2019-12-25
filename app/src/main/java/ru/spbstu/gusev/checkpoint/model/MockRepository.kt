@@ -1,17 +1,11 @@
 package ru.spbstu.gusev.checkpoint.model
 
 import android.content.Context
-import ru.spbstu.gusev.checkpoint.R
 
 class MockRepository(val context: Context) {
     fun getCheckList(): List<CheckItem> {
         val tmpList = mutableListOf<CheckItem>()
         val categories = listOf("Видеокарта", "Монитор", "Оперативная память")
-        val icons = listOf(
-            R.drawable.icon_vga,
-            R.drawable.icon_display,
-            R.drawable.icon_dram
-        )
         for (i in 0 until 10) {
             val randomNumber = (0..2).random()
             tmpList.add(

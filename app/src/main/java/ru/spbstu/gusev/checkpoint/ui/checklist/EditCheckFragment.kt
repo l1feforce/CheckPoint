@@ -1,6 +1,7 @@
 package ru.spbstu.gusev.checkpoint.ui.checklist
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.view.forEach
 import androidx.lifecycle.ViewModelProvider
@@ -10,29 +11,24 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.android.material.textfield.TextInputLayout
-import kotlinx.android.synthetic.main.new_check_fragment.*
 import kotlinx.android.synthetic.main.new_check_layout.*
 import kotlinx.android.synthetic.main.product_item_editable.view.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import ru.spbstu.gusev.checkpoint.App
 import ru.spbstu.gusev.checkpoint.R
-import ru.spbstu.gusev.checkpoint.extensions.snackbar
 import ru.spbstu.gusev.checkpoint.extensions.toUri
 import ru.spbstu.gusev.checkpoint.model.CheckItem
 import ru.spbstu.gusev.checkpoint.model.ProductItem
 import ru.spbstu.gusev.checkpoint.model.ProductType
-import ru.spbstu.gusev.checkpoint.model.RecognitionRepository
+import ru.spbstu.gusev.checkpoint.ui.adapter.ProductAdapter
 import ru.spbstu.gusev.checkpoint.ui.base.BaseFragment
-import ru.spbstu.gusev.checkpoint.ui.checklist.adapter.ProductAdapter
 import ru.spbstu.gusev.checkpoint.viewmodel.CheckListViewModel
 
 
 class EditCheckFragment : BaseFragment() {
-    private lateinit var newCheck: CheckItem
     private lateinit var productAdapter: ProductAdapter
-    private var isOldCheck = ""
-    private var imagePath = ""
+    private var isEditMode = false
 
     override val layoutRes: Int
         get() = R.layout.new_check_fragment
@@ -44,36 +40,33 @@ class EditCheckFragment : BaseFragment() {
         viewModel =
             ViewModelProvider(activity?.application as App).get(CheckListViewModel::class.java)
 
+        isEditMode = arguments?.getString("is_edit_mode")?.isNotEmpty() ?: false
         setupRecycler()
         setErrorsCancellation()
 
-        imagePath = arguments?.getString("image") ?: ""
-        isOldCheck = arguments?.getString("is_old_check") ?: ""
-        if (isOldCheck == "true") {
-            stopShimming()
-            setCheckItemToView(viewModel.currentCheckItem)
-            newCheck = viewModel.currentCheckItem
-        } else {
-            recognizePhoto(imagePath)
-        }
+        setCheckItemToView(viewModel.currentCheckItem)
 
         complete_button.setOnClickListener {
             if (!setErrors()) {
                 setViewToCheckItem()
-                val databaseAccess = if (isOldCheck == "true") {
-                    GlobalScope.async { viewModel.updateCheck(newCheck) }
-                } else {
+                val databaseAccess = if (isEditMode) {
+                    Log.v("tag", "update")
                     GlobalScope.async {
-                        viewModel.addCheck(newCheck)
+                        viewModel.updateCheck(viewModel.currentCheckItem)
+                    }
+                } else {
+                    Log.v("tag", "insert")
+                    GlobalScope.async {
+                        viewModel.addCheck(viewModel.currentCheckItem)
                     }
                 }
-                databaseAccess.invokeOnCompletion { openCheckDetails(newCheck) }
+                databaseAccess.invokeOnCompletion { openCheckDetails(viewModel.currentCheckItem) }
             }
         }
 
         add_button.setOnClickListener {
             setViewToCheckItem()
-            productAdapter.updateProducts(newCheck.products)
+            productAdapter.updateProducts(viewModel.currentCheckItem.products)
             productAdapter.addProducts(listOf(ProductItem("", 0f)))
         }
     }
@@ -105,29 +98,6 @@ class EditCheckFragment : BaseFragment() {
         return isError
     }
 
-    private fun recognizePhoto(imagePath: String) {
-        shimmer_layout.startShimmerAnimation()
-        val onSuccess = {
-            stopShimming()
-            setCheckItemToView(RecognitionRepository.newCheck)
-        }
-        val onFailure: (Exception) -> (Unit) = {
-            stopShimming()
-            val check = CheckItem.createDefault()
-            check.checkImagePath = imagePath
-            setCheckItemToView(check)
-            requireView().snackbar(it.message.toString())
-        }
-        newCheck =
-            RecognitionRepository.recognize(imagePath, requireContext(), onSuccess, onFailure)
-    }
-
-    private fun stopShimming() {
-        shimmer_layout.stopShimmerAnimation()
-        new_check_include.visibility = View.VISIBLE
-        shimmer_layout.visibility = View.GONE
-    }
-
     private fun openCheckDetails(checkItem: CheckItem) {
         viewModel.setCurrentCheckView(checkItem)
         val navOptions = NavOptions.Builder()
@@ -146,7 +116,7 @@ class EditCheckFragment : BaseFragment() {
     }
 
     private fun setViewToCheckItem() {
-        newCheck.apply {
+        viewModel.currentCheckItem.apply {
             categoryName = category_name_text.text.toString()
             finalPrice = final_price_text.text.toString().toFloat()
             date = date_text.text.toString()

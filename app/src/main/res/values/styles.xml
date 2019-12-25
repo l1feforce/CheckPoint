@@ -21,7 +21,7 @@
         </item>
     </style>
 
-    <color name="background">#FAFAFA</color>
+    <color name="background">#F0F0F0</color>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>

@@ -38,7 +38,7 @@ class RecognitionRepository {
                 getBarcodesFromImage(firebaseImage)
             }.addOnSuccessListener {
                 val recognizedQr = if (it.isNotEmpty()) it.first().rawValue else ""
-                val parsedCheck = CheckParser.parse(recognizedText, recognizedQr ?: "")
+                val parsedCheck = CheckParserUtils.parse(recognizedText, recognizedQr ?: "")
                 newCheck.copy(parsedCheck)
                 newCheck.checkImagePath = imagePath
                 onSuccess()

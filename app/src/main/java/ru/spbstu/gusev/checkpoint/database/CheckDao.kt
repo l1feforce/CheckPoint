@@ -1,4 +1,4 @@
-package ru.spbstu.gusev.checkpoint.model.database
+package ru.spbstu.gusev.checkpoint.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
@@ -20,4 +20,7 @@ interface CheckDao {
 
     @Insert
     suspend fun insertAll(checkList: List<CheckItem>)
+
+    @Query("SELECT id from check_table WHERE checkImagePath = :imagePath")
+    suspend fun getIdByItem(imagePath: String): String
 }

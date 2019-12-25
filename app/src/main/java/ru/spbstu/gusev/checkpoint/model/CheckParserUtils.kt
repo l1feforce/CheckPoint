@@ -3,7 +3,7 @@ package ru.spbstu.gusev.checkpoint.model
 import android.util.Log
 import com.google.firebase.ml.vision.text.FirebaseVisionText
 
-class CheckParser {
+class CheckParserUtils {
     companion object {
         val parsedCheck = CheckItem.createDefault()
 

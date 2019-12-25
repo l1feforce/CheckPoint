@@ -19,7 +19,6 @@ class App : Application(), ViewModelStoreOwner {
     override fun onCreate() {
         super.onCreate()
 
-        //TODO initialize libs
         initToothpick()
         initAppScope()
     }

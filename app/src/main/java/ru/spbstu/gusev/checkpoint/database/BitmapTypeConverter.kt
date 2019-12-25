@@ -1,4 +1,4 @@
-package ru.spbstu.gusev.checkpoint.model.database
+package ru.spbstu.gusev.checkpoint.database
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

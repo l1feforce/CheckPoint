@@ -4,7 +4,7 @@ import com.google.firebase.ml.vision.text.FirebaseVisionText
 import org.junit.Assert
 import org.junit.Test
 
-class CheckParserTest {
+class CheckParserUtilsTest {
     private val firebaseVisionText = FirebaseVisionText(
     "ЛОБРО ПОЖОЛОВАТЬ!\n" +
     "    КАССОВЫЙ ЧЕК\n" +
@@ -76,9 +76,9 @@ class CheckParserTest {
     fun testParseTextDate() {
         val qr = ""
         val defaultDate = "12.12.1754"
-        val parser = CheckParser
+        val parser = CheckParserUtils
         parser.parsedCheck.date = defaultDate
-        val result = CheckParser.parse(firebaseVisionText, qr)
+        val result = CheckParserUtils.parse(firebaseVisionText, qr)
         Assert.assertEquals("15.11.19", result.date)
     }
 
@@ -86,16 +86,16 @@ class CheckParserTest {
     fun testParseSum() {
         val qr = ""
         val defaultPrice = 0f
-        val parser = CheckParser
+        val parser = CheckParserUtils
         parser.parsedCheck.finalPrice = defaultPrice
-        val result = CheckParser.parse(firebaseVisionText, qr)
+        val result = CheckParserUtils.parse(firebaseVisionText, qr)
         Assert.assertEquals(229.03f, result.finalPrice)
     }
 
     @Test
     fun testParseQr() {
         val qr = "t=20181007T2151&s=1955.49&fn=8710000101838052&i=18487&fp=2392195712&n=1\n"
-        val result = CheckParser.parse(firebaseVisionText, qr)
+        val result = CheckParserUtils.parse(firebaseVisionText, qr)
         Assert.assertEquals("2018.10.07", result.date)
         Assert.assertEquals(1955.49f, result.finalPrice)
     }
@@ -104,6 +104,6 @@ class CheckParserTest {
     fun testEmptyPhoto() {
         val qr = ""
         val image = FirebaseVisionText("", listOf())
-        val result = CheckParser.parse(image, qr)
+        val result = CheckParserUtils.parse(image, qr)
     }
 }
