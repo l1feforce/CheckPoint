@@ -2,16 +2,15 @@ package ru.spbstu.gusev.checkpoint.ui.checklist
 
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
-import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.util.TypedValue
-import android.view.*
-import androidx.annotation.ColorInt
+import android.view.MenuItem
+import android.view.View
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -19,7 +18,9 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.check_list_fragment.*
+import kotlinx.android.synthetic.main.nav_header_main.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -27,6 +28,7 @@ import kotlinx.coroutines.withContext
 import ru.spbstu.gusev.checkpoint.App
 import ru.spbstu.gusev.checkpoint.R
 import ru.spbstu.gusev.checkpoint.extensions.getBitmapByPath
+import ru.spbstu.gusev.checkpoint.extensions.getColorFromTheme
 import ru.spbstu.gusev.checkpoint.extensions.snackbar
 import ru.spbstu.gusev.checkpoint.extensions.toUri
 import ru.spbstu.gusev.checkpoint.model.CheckItem
@@ -50,27 +52,8 @@ class CheckListFragment : BaseFragment() {
 
     override val layoutRes: Int
         get() = R.layout.check_list_fragment
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        setHasOptionsMenu(true)
-        return super.onCreateView(inflater, container, savedInstanceState)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.toolbar_menu_auth, menu)
-        val typedValue = TypedValue()
-        val theme = requireContext().theme
-        theme.resolveAttribute(R.attr.colorOnPrimary, typedValue, true)
-        @ColorInt val color = typedValue.data
-        menu.findItem(R.id.auth_action).icon.setColorFilter(
-            color, PorterDuff.Mode.SRC_ATOP
-        )
-        super.onCreateOptionsMenu(menu, inflater)
-    }
+    override val menuRes: Int?
+        get() = R.menu.toolbar_menu_auth
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -80,21 +63,45 @@ class CheckListFragment : BaseFragment() {
         setupRecycler()
         getData()
 
+        viewModel.refreshData()
+        viewModel.isLoading.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            if (it) showProgress() else hideProgress()
+        })
+
+        viewModel.errorText.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            if (it.isNotEmpty()) {
+                requireView().snackbar(it)
+            }
+        })
+
+        FirebaseAuth.getInstance().addAuthStateListener {
+            if (it.currentUser == null) {
+                showNoUser()
+                requireActivity().nav_view.getHeaderView(0).header_logo_image.setOnClickListener {
+                    startAuth()
+                }
+                viewModel.cleanData()
+            } else {
+                showNewUser(
+                    it.currentUser?.displayName ?: it.currentUser?.email
+                    ?: it.currentUser?.phoneNumber ?: getString(R.string.user_name_example)
+                )
+                requireActivity().nav_view.getHeaderView(0).sign_out_button.setOnClickListener {
+                    FirebaseAuth.getInstance().signOut()
+                }
+            }
+        }
+
         add_photo_fab.setOnClickListener {
             takePicture()
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.refreshData()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             REQUEST_CAMERA -> {
                 try {
-                    showProgress()
+                    viewModel.isLoading.value = true
                     GlobalScope.launch(Dispatchers.IO) {
                         val bitmap = requireContext().getBitmapByPath(currentPhotoPath)
                         val stream = ByteArrayOutputStream()
@@ -103,7 +110,7 @@ class CheckListFragment : BaseFragment() {
                         withContext(Dispatchers.Main) {
                             if (bitmap.height > 32) {
                                 recognizePhoto(currentPhotoPath)
-                            } else hideProgress()
+                            } else viewModel.isLoading.value = false
                         }
                     }
                 } catch (e: Exception) {
@@ -144,14 +151,14 @@ class CheckListFragment : BaseFragment() {
     private fun recognizePhoto(imagePath: String) {
         val onSuccess = {
             viewModel.currentCheckItem = RecognitionRepository.newCheck
-            hideProgress()
+            viewModel.isLoading.value = false
             findNavController().navigate(R.id.editCheckFragment)
         }
         val onFailure: (Exception) -> (Unit) = {
             val check = CheckItem.createDefault()
             check.checkImagePath = imagePath
             viewModel.currentCheckItem = check
-            hideProgress()
+            viewModel.isLoading.value = false
             requireView().snackbar(it.message.toString())
         }
         viewModel.currentCheckItem =
@@ -184,8 +191,14 @@ class CheckListFragment : BaseFragment() {
     private fun getData() {
         viewModel.allChecks.observe(viewLifecycleOwner,
             androidx.lifecycle.Observer { checkList ->
+                viewModel.isLoading.value = false
                 checkList?.let {
                     checkAdapter.updateChecks(it)
+                    if (it.isNotEmpty()) {
+                        showContent()
+                    } else {
+                        showEmptyPlaceholder()
+                    }
                     it.forEach {
                         //create files if not exists
                         if (it.checkImagePath.toUri().toString() == "") {
@@ -199,28 +212,28 @@ class CheckListFragment : BaseFragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.auth_action -> {
-                // Choose authentication providers
-                val providers = arrayListOf(
-                    AuthUI.IdpConfig.PhoneBuilder().build(),
-                    AuthUI.IdpConfig.GoogleBuilder().build()
-                )
-                if (FirebaseAuth.getInstance().currentUser == null) {
-                    startActivityForResult(
-                        AuthUI.getInstance()
-                            .createSignInIntentBuilder()
-                            .setAvailableProviders(providers)
-                            .setLogo(R.drawable.logo_checkpoint)
-                            .setTheme(R.style.AppTheme)
-                            .build(),
-                        RC_SIGN_IN
-                    )
-                } else {
-                    //show user account page
-                }
+            R.id.edit_action -> {
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun startAuth() {
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.PhoneBuilder().build(),
+            AuthUI.IdpConfig.GoogleBuilder().build()
+        )
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            startActivityForResult(
+                AuthUI.getInstance()
+                    .createSignInIntentBuilder()
+                    .setAvailableProviders(providers)
+                    .setLogo(R.drawable.logo_checkpoint)
+                    .setTheme(R.style.AppTheme)
+                    .build(),
+                RC_SIGN_IN
+            )
         }
     }
 
@@ -230,5 +243,37 @@ class CheckListFragment : BaseFragment() {
 
     private fun hideProgress() {
         progress_bar.visibility = View.GONE
+    }
+
+    private fun showEmptyPlaceholder() {
+        check_list_recycler.visibility = View.GONE
+        empty_checklist_include.visibility = View.VISIBLE
+    }
+
+    private fun showContent() {
+        check_list_recycler.visibility = View.VISIBLE
+        empty_checklist_include.visibility = View.GONE
+    }
+
+    private fun showNewUser(userName: String) {
+        with(requireActivity().nav_view.getHeaderView(0)) {
+            this.header_logo_image.setImageResource(R.mipmap.ic_launcher_round)
+            this.header_logo_image.imageTintList = null
+            this.sign_out_button.visibility = View.VISIBLE
+            this.user_name_text.visibility = View.VISIBLE
+            this.user_name_text.text = userName
+            this.log_in_title_text.visibility = View.GONE
+        }
+    }
+
+    private fun showNoUser() {
+        with(requireActivity().nav_view.getHeaderView(0)) {
+            this.header_logo_image.setImageResource(R.drawable.ic_log_in)
+            this.header_logo_image.imageTintList =
+                ColorStateList.valueOf(requireContext().getColorFromTheme(R.attr.colorOnSecondary))
+            this.sign_out_button.visibility = View.GONE
+            this.user_name_text.visibility = View.GONE
+            this.log_in_title_text.visibility = View.VISIBLE
+        }
     }
 }

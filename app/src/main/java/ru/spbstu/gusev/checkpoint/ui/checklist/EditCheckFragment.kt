@@ -13,8 +13,10 @@ import com.bumptech.glide.Glide
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.android.synthetic.main.new_check_layout.*
 import kotlinx.android.synthetic.main.product_item_editable.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import ru.spbstu.gusev.checkpoint.App
 import ru.spbstu.gusev.checkpoint.R
 import ru.spbstu.gusev.checkpoint.extensions.toUri
@@ -32,6 +34,8 @@ class EditCheckFragment : BaseFragment() {
 
     override val layoutRes: Int
         get() = R.layout.new_check_fragment
+    override val menuRes: Int?
+        get() = null
 
     private lateinit var viewModel: CheckListViewModel
 
@@ -103,7 +107,9 @@ class EditCheckFragment : BaseFragment() {
         val navOptions = NavOptions.Builder()
             .setPopUpTo(R.id.checkListFragment, false)
             .build()
-        findNavController().navigate(R.id.checkDetailsFragment, arguments, navOptions)
+        GlobalScope.launch(Dispatchers.Main) {
+            findNavController().navigate(R.id.checkDetailsFragment, arguments, navOptions)
+        }
     }
 
     private fun setCheckItemToView(checkItem: CheckItem) {

@@ -8,16 +8,16 @@
     <fragment
             android:id="@+id/checkListFragment"
             android:name="ru.spbstu.gusev.checkpoint.ui.checklist.CheckListFragment"
-            android:label="fragment_check_list"
+            android:label="@string/check_list_title"
             tools:layout="@layout/check_list_fragment" />
     <fragment
             android:id="@+id/checkDetailsFragment"
             android:name="ru.spbstu.gusev.checkpoint.ui.checklist.CheckDetailsFragment"
-            android:label="check_details_fragment"
+            android:label="@string/check_details_title"
             tools:layout="@layout/check_details_fragment" />
     <fragment
             android:id="@+id/editCheckFragment"
             android:name="ru.spbstu.gusev.checkpoint.ui.checklist.EditCheckFragment"
-            android:label="new_check_fragment"
+            android:label="@string/edit_check_title"
             tools:layout="@layout/new_check_fragment" />
 </navigation>

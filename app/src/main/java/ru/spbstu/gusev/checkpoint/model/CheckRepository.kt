@@ -1,5 +1,7 @@
 package ru.spbstu.gusev.checkpoint.model
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import ru.spbstu.gusev.checkpoint.database.CheckDatabase
 import javax.inject.Inject
 
@@ -15,7 +17,7 @@ class CheckRepository @Inject constructor
 
     val checkList = firestoreRepository.checkList
 
-    fun insert(checkItem: CheckItem) =
+    suspend fun insert(checkItem: CheckItem) =
         firestoreRepository.insert(checkItem)
 
 
@@ -30,5 +32,14 @@ class CheckRepository @Inject constructor
 
     fun getAll() =
         firestoreRepository.getAll()
+
+    fun clearAll() {
+        GlobalScope.launch {
+            checkDatabase.clearAllTables()
+            firestoreRepository.cleanAll()
+        }
+        checkList.value = listOf()
+    }
+
 
 }

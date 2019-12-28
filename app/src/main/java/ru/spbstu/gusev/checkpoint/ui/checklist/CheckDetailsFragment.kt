@@ -1,10 +1,7 @@
 package ru.spbstu.gusev.checkpoint.ui.checklist
 
-import android.graphics.PorterDuff
 import android.os.Bundle
-import android.util.TypedValue
-import android.view.*
-import androidx.annotation.ColorInt
+import android.view.MenuItem
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -28,28 +25,9 @@ class CheckDetailsFragment : BaseFragment() {
 
     override val layoutRes: Int
         get() = R.layout.check_details_fragment
+    override val menuRes: Int?
+        get() = R.menu.toolbar_menu_edit
     private lateinit var viewModel: CheckListViewModel
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        setHasOptionsMenu(true)
-        return super.onCreateView(inflater, container, savedInstanceState)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.toolbar_menu_edit, menu)
-        val typedValue = TypedValue()
-        val theme = requireContext().theme
-        theme.resolveAttribute(R.attr.colorOnPrimary, typedValue, true)
-        @ColorInt val color = typedValue.data
-        menu.findItem(R.id.edit_action).icon.setColorFilter(
-            color, PorterDuff.Mode.SRC_ATOP
-        )
-        super.onCreateOptionsMenu(menu, inflater)
-    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

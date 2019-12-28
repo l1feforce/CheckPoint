@@ -15,6 +15,9 @@ interface CheckDao {
     @Query("SELECT * from check_table")
     fun getAll(): LiveData<List<CheckItem>>
 
+    @Query("SELECT * from check_table")
+    suspend fun getAllAsync(): List<CheckItem>
+
     @Update
     suspend fun update(checkItem: CheckItem)
 

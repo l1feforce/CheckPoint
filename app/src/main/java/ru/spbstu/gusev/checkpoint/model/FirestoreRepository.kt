@@ -7,19 +7,21 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import ru.spbstu.gusev.checkpoint.database.CheckDatabase
 import javax.inject.Inject
 
 class FirestoreRepository @Inject constructor
     (
-    private val checkDatabase: CheckDatabase
+    checkDatabase: CheckDatabase
 ) {
     private val remoteDB = FirebaseFirestore.getInstance().apply {
         firestoreSettings = FirebaseFirestoreSettings.Builder()
             .build()
     }
 
+    private val checkDao = checkDatabase.checkDao()
     val checkList = MutableLiveData<List<CheckItem>>()
 
     init {
@@ -36,7 +38,12 @@ class FirestoreRepository @Inject constructor
                 .addOnSuccessListener { doc ->
                     Log.v("tag", "success: ${doc.id}")
                     GlobalScope.launch(Dispatchers.IO) {
-                        checkDatabase.checkDao().insert(checkItem.apply { id = doc.id })
+                        val localDbInsertion = async {
+                            checkDao.insert(checkItem.apply { id = doc.id })
+                        }
+                        localDbInsertion.invokeOnCompletion {
+                            GlobalScope.launch { update(checkItem) }
+                        }
                     }
                 }
                 .addOnFailureListener {
@@ -55,6 +62,15 @@ class FirestoreRepository @Inject constructor
                 .addOnSuccessListener { snapshot ->
                     val result = snapshot.toObjects(CheckItem::class.java)
                     checkList.value = result
+                    GlobalScope.launch(Dispatchers.IO) {
+                        val localData = checkDao.getAllAsync()
+                        Log.v("tag", "local db: $localData")
+                        Log.v("tag", "remote db: $result")
+                        if (localData.isEmpty() && result.isNotEmpty()) {
+                            Log.v("tag", "inside insert all")
+                            checkDao.insertAll(result)
+                        }
+                    }
                 }
                 .addOnFailureListener {
                     Log.v("tag", it.message)
@@ -65,17 +81,24 @@ class FirestoreRepository @Inject constructor
     suspend fun update(checkItem: CheckItem) {
         val currentUser = getCurrentUser()
         if (currentUser != null) {
-            val documentPath = checkDatabase.checkDao().getIdByItem(checkItem.checkImagePath)
+            val documentId = checkDao.getIdByItem(checkItem.checkImagePath)
             remoteDB.collection("users")
                 .document(currentUser.uid)
-                .collection("checks").document(documentPath)
-                .set(checkItem.apply { id = "" })
+                .collection("checks").document(documentId)
+                .set(checkItem)
                 .addOnFailureListener {
                     Log.v("tag", it.message)
+                }
+                .addOnSuccessListener {
+                    Log.v("tag", "update successfuly")
                 }
         }
     }
 
     private fun getCurrentUser() = FirebaseAuth.getInstance().currentUser
+
+    fun cleanAll() {
+        remoteDB.clearPersistence()
+    }
 
 }

@@ -17,8 +17,7 @@
         <item name="colorOnBackground">#212121</item>
         <item name="colorSuccess">#8fc449</item>
         <item name="android:fontFamily">@font/open_sans_regular</item>
-        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox
-        </item>
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
     </style>
 
     <color name="background">#F0F0F0</color>
@@ -27,9 +26,23 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
-    
+
     <style name="AppTheme.Launcher">
         <item name="android:windowBackground">@drawable/launch_screen</item>
     </style>
 
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        <item name="android:background">#212121</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+    </style>
+
+    <style name="TextHeadlineThink">
+        <item name="android:textSize">30sp</item>
+        <item name="android:fontFamily">@font/open_sans_light</item>
+    </style>
+
+    <style name="TextTitleBoldSmall">
+        <item name="android:fontFamily">@font/open_sans_bold</item>
+        <item name="android:textSize">16sp</item>
+    </style>
 </resources>
