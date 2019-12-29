@@ -53,7 +53,7 @@ class CheckListFragment : BaseFragment() {
     override val layoutRes: Int
         get() = R.layout.check_list_fragment
     override val menuRes: Int?
-        get() = R.menu.toolbar_menu_auth
+        get() = R.menu.toolbar_menu_edit
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -75,6 +75,7 @@ class CheckListFragment : BaseFragment() {
         })
 
         FirebaseAuth.getInstance().addAuthStateListener {
+            viewModel.refreshData()
             if (it.currentUser == null) {
                 showNoUser()
                 requireActivity().nav_view.getHeaderView(0).header_logo_image.setOnClickListener {
@@ -199,13 +200,6 @@ class CheckListFragment : BaseFragment() {
                     } else {
                         showEmptyPlaceholder()
                     }
-                    it.forEach {
-                        //create files if not exists
-                        if (it.checkImagePath.toUri().toString() == "") {
-                            val file = createImageFile()
-                            it.checkImagePath = file.absolutePath
-                        }
-                    }
                 }
             })
     }
@@ -263,6 +257,7 @@ class CheckListFragment : BaseFragment() {
             this.user_name_text.visibility = View.VISIBLE
             this.user_name_text.text = userName
             this.log_in_title_text.visibility = View.GONE
+            this.log_in_description_text.visibility = View.GONE
         }
     }
 
@@ -274,6 +269,7 @@ class CheckListFragment : BaseFragment() {
             this.sign_out_button.visibility = View.GONE
             this.user_name_text.visibility = View.GONE
             this.log_in_title_text.visibility = View.VISIBLE
+            this.log_in_description_text.visibility = View.VISIBLE
         }
     }
 }

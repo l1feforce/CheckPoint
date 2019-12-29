@@ -110,9 +110,12 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:19.2.0'
     implementation 'com.firebaseui:firebase-ui-auth:4.3.1'
 
-    //Firebase store
+    //Firebase firestore
     implementation 'com.google.firebase:firebase-firestore:21.3.1'
     implementation 'com.google.firebase:firebase-firestore-ktx:21.3.1'
+
+    //Firebase storage
+    implementation 'com.google.firebase:firebase-storage-ktx:19.1.0'
 
     //Circle imageview
     implementation 'com.mikhaellopez:circularimageview:4.1.1'

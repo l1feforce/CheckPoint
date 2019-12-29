@@ -6,6 +6,7 @@ import ru.spbstu.gusev.checkpoint.database.CheckDatabase
 import ru.spbstu.gusev.checkpoint.model.CheckItem
 import ru.spbstu.gusev.checkpoint.model.FirestoreRepository
 import ru.spbstu.gusev.checkpoint.model.MockRepository
+import ru.spbstu.gusev.checkpoint.model.PhotosRepository
 import toothpick.config.Module
 
 class AppModule(context: Context) : Module() {
@@ -23,5 +24,6 @@ class AppModule(context: Context) : Module() {
             localDatabase
         )
         bind(FirestoreRepository::class.java).toInstance(FirestoreRepository(localDatabase))
+        bind(PhotosRepository::class.java).toInstance(PhotosRepository(context))
     }
 }

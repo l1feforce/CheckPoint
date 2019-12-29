@@ -39,4 +39,6 @@
     <string name="there_are_no_checks">There are no checks yet. \nAdd new one now!</string>
     <string name="user_name_example">User name</string>
     <string name="log_in">Log in</string>
+    <string name="about_title">About</string>
+    <string name="log_in_description">and add some new reciepts!</string>
 </resources>

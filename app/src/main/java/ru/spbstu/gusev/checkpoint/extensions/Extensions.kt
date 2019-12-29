@@ -49,13 +49,14 @@ fun Context.getBitmapByPath(path: String): Bitmap {
     }
 }
 
-fun String.toUri() =
-    try {
+fun String.toUri(): Uri {
+    return try {
         Uri.parse("file://$this")
     } catch (e: Exception) {
         Log.v("TAG", "There is no photo by this path")
         Uri.parse("")
     }
+}
 
 private fun setRightRotation(image: Bitmap, currentPhotoPath: String): Bitmap {
     val ei = ExifInterface(currentPhotoPath)

@@ -13,7 +13,7 @@ data class CheckItem(
     var checkImagePath: String = "",
     @PrimaryKey
     var id: String = "",
-    var imageBase64: String = ""
+    var imageId: String = ""
 ) {
     companion object {
         fun createDefault() = CheckItem(
@@ -35,7 +35,7 @@ data class CheckItem(
         shop = checkItem.shop
         products = checkItem.products
         checkImagePath = checkItem.checkImagePath
-        imageBase64 = checkItem.imageBase64
+        imageId = checkItem.imageId
     }
 
     fun toMap() = hashMapOf(
