@@ -1,6 +1,7 @@
 package ru.spbstu.gusev.checkpoint.ui.checklist
 
 
+import android.app.Activity
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
@@ -8,7 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import androidx.core.content.FileProvider
@@ -30,14 +30,16 @@ import ru.spbstu.gusev.checkpoint.R
 import ru.spbstu.gusev.checkpoint.extensions.getBitmapByPath
 import ru.spbstu.gusev.checkpoint.extensions.getColorFromTheme
 import ru.spbstu.gusev.checkpoint.extensions.snackbar
-import ru.spbstu.gusev.checkpoint.extensions.toUri
 import ru.spbstu.gusev.checkpoint.model.CheckItem
 import ru.spbstu.gusev.checkpoint.model.RecognitionRepository
 import ru.spbstu.gusev.checkpoint.ui.adapter.CheckAdapter
 import ru.spbstu.gusev.checkpoint.ui.base.BaseFragment
 import ru.spbstu.gusev.checkpoint.viewmodel.CheckListViewModel
+import team.clevel.documentscanner.ImageCropActivity
+import team.clevel.documentscanner.helpers.ScannerConstants
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -48,6 +50,7 @@ class CheckListFragment : BaseFragment() {
     private lateinit var viewModel: CheckListViewModel
     private val REQUEST_CAMERA = 1488
     private val RC_SIGN_IN = 1337
+    private val REQUEST_CROP = 1228
     private var currentPhotoPath = ""
 
     override val layoutRes: Int
@@ -62,6 +65,7 @@ class CheckListFragment : BaseFragment() {
 
         setupRecycler()
         getData()
+        setupCropView()
 
         viewModel.refreshData()
         viewModel.isLoading.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
@@ -98,26 +102,59 @@ class CheckListFragment : BaseFragment() {
         }
     }
 
+    private fun setupCropView() {
+        ScannerConstants.backColor = "#F0F0F0"
+        ScannerConstants.cropText = resources.getString(R.string.crop_text)
+        ScannerConstants.backText = resources.getString(R.string.back_text)
+        ScannerConstants.cropError = resources.getString(R.string.crop_error)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            REQUEST_CAMERA -> {
+        when {
+            requestCode == REQUEST_CAMERA -> {
                 try {
                     viewModel.isLoading.value = true
                     GlobalScope.launch(Dispatchers.IO) {
                         val bitmap = requireContext().getBitmapByPath(currentPhotoPath)
                         val stream = ByteArrayOutputStream()
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream)
-                        Log.v("tag", "photo path check list frgm: $currentPhotoPath")
                         withContext(Dispatchers.Main) {
                             if (bitmap.height > 32) {
-                                recognizePhoto(currentPhotoPath)
+                                ScannerConstants.selectedImageBitmap = bitmap
+                                File(currentPhotoPath).delete()
+                                startActivityForResult(
+                                    Intent(
+                                        requireContext(),
+                                        ImageCropActivity::class.java
+                                    ), REQUEST_CROP
+                                )
                             } else viewModel.isLoading.value = false
                         }
                     }
                 } catch (e: Exception) {
+                    viewModel.isLoading.value = false
                     requireView().snackbar(e.message.toString())
                 }
             }
+            requestCode == REQUEST_CROP && resultCode == Activity.RESULT_OK -> {
+                createImageFile().also {
+                    try {
+                        val out = FileOutputStream(it);
+                        ScannerConstants.selectedImageBitmap.compress(
+                            Bitmap.CompressFormat.JPEG,
+                            100,
+                            out
+                        )
+                        out.flush()
+                        out.close()
+                    } catch (e: Exception) {
+                        viewModel.isLoading.value = false
+                        requireView().snackbar(e.message.toString())
+                    }
+                }
+                recognizePhoto(currentPhotoPath)
+            }
+            requestCode == REQUEST_CROP -> viewModel.isLoading.value = false
         }
     }
 

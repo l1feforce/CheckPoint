@@ -41,4 +41,7 @@
     <string name="log_in">Log in</string>
     <string name="about_title">About</string>
     <string name="log_in_description">and add some new reciepts!</string>
+    <string name="crop_text">Crop</string>
+    <string name="back_text">Back</string>
+    <string name="crop_error">Crop error</string>
 </resources>
